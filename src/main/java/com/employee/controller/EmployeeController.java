@@ -5,10 +5,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 
+import java.text.ParseException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +18,15 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.employee.common.Constants;
 import com.employee.domain.EmployeeDTO;
 import com.employee.exception.ApiException;
 import com.employee.exception.NotFoundException;
+import com.employee.persistence.Employee;
 import com.employee.service.EmployeeService;
 
 import io.swagger.annotations.ApiOperation;
@@ -41,12 +46,29 @@ public class EmployeeController {
 	@ApiOperation(value = "Retrieve all Employee's", notes = "")
 	@RequestMapping(value = "/employees", method = GET, produces="application/json")
 	@ResponseBody
-	public List<EmployeeDTO> employees(
-			HttpServletResponse response) {
+	public List<EmployeeDTO> employees(HttpServletResponse response,
+			@ApiParam(value = "The employee's 'firstName'", required = false) @RequestParam(value="firstName", required = false, defaultValue="") String firstName,
+			@ApiParam(value = "The employee's 'lastName'", required = false) @RequestParam(value="lastName", required = false, defaultValue="") String lastName,
+			@ApiParam(value = "The employee's 'hireDate'", required = false) @RequestParam(value="hireDate", required = false, defaultValue="") String hireDate,
+			@ApiParam(value = "Limit the amount of records to retrieve", required = false) @RequestParam(value="limit", required = false, defaultValue="100") Integer limit,
+			@ApiParam(value = "Skip the number of records specified", required = false) @RequestParam(value="offset", required = false, defaultValue="0") Integer offset,
+			@ApiParam(value = "Order by", required = false, allowableValues="firstName, lastName, hireDate") @RequestParam(value="orderBy", required = false, defaultValue="hireDate") String orderBy,
+			@ApiParam(value = "Order", required = false, allowableValues="ASC, DESC") @RequestParam(value="order", required = false, defaultValue="ASC") String order) {
 
-		LOG.debug("Processing /employees GET request");
+		Employee searchCriteria = new Employee();
+		searchCriteria.setFirstName(firstName);
+		searchCriteria.setLastName(lastName);
+		if(StringUtils.isNotBlank(hireDate)) {
+			try {
+				searchCriteria.setHireDate(Constants.HIRE_DATE_FORMATTER.parse(hireDate));
+			} catch (ParseException e) {
+				LOG.error("The hireDate threw an expcetion. Ignoring. Message {}" , e);
+			}
+		}
 
-		return employeeService.findAll();
+		LOG.debug("Processing /employees GET request with criteria: {}", searchCriteria);
+
+		return employeeService.findByCriteria(searchCriteria, limit, offset, orderBy, order);
 	}
 /*
 	@ApiOperation(value = "Delete a specific Employee by its 'id'", notes = "")
