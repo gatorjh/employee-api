@@ -6,6 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.employee.domain.DepartmentDTO;
@@ -14,6 +17,7 @@ import com.employee.exception.BadRequestException;
 import com.employee.mapper.DepartmentMapper;
 import com.employee.persistence.Department;
 import com.employee.repository.DepartmentRepository;
+import com.employee.repository.DepartmentSpecification;
 
 @Service
 public class DepartmentService {
@@ -24,6 +28,16 @@ public class DepartmentService {
 
 	@Autowired
 	DepartmentMapper departmentMapper;
+
+	public List<DepartmentDTO> findByCriteria(Department searchCriteria, Integer limit, Integer offset, String orderBy, String order) {
+		Sort sortOrder = new Sort("ASC".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC , orderBy);
+		PageRequest pageRequest = new PageRequest(offset, limit, sortOrder);
+
+		Page<Department> queryResults = departmentRepository.findAll(
+				DepartmentSpecification.findByCriteria(searchCriteria), pageRequest);
+
+		return departmentMapper.fromDepartments(queryResults.getContent());
+	}
 
 	public List<DepartmentDTO> findAll() {
 		LOG.debug("findAll called");

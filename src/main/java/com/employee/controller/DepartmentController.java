@@ -14,12 +14,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.employee.domain.DepartmentDTO;
 import com.employee.exception.ApiException;
 import com.employee.exception.NotFoundException;
+import com.employee.persistence.Department;
 import com.employee.service.DepartmentService;
 
 import io.swagger.annotations.ApiOperation;
@@ -39,12 +41,19 @@ public class DepartmentController {
 	@ApiOperation(value = "Retrieve all Department's", notes = "")
 	@RequestMapping(value = "/departments", method = GET, produces="application/json")
 	@ResponseBody
-	public List<DepartmentDTO> departments(
-			HttpServletResponse response) {
+	public List<DepartmentDTO> departments(HttpServletResponse response,
+			@ApiParam(value = "The department's 'name'", required = false) @RequestParam(value="name", required = false, defaultValue="") String name,
+			@ApiParam(value = "Limit the amount of records to retrieve", required = false) @RequestParam(value="limit", required = false, defaultValue="100") Integer limit,
+			@ApiParam(value = "Skip the number of records specified", required = false) @RequestParam(value="offset", required = false, defaultValue="0") Integer offset,
+			@ApiParam(value = "Order by", required = false, allowableValues="name") @RequestParam(value="orderBy", required = false, defaultValue="name") String orderBy,
+			@ApiParam(value = "Order", required = false, allowableValues="ASC, DESC") @RequestParam(value="order", required = false, defaultValue="ASC") String order) {
 
-		LOG.debug("Processing /departments GET request");
+		Department searchCriteria = new Department();
+		searchCriteria.setName(name);
+		
+		LOG.debug("Processing /departments GET request with criteria: {}", searchCriteria);
 
-		return departmentService.findAll();
+		return departmentService.findByCriteria(searchCriteria, limit, offset, orderBy, order);
 	}
 
 	@ApiOperation(value = "Retrieve a specific Department by its 'id'", notes = "")

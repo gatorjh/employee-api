@@ -1,6 +1,7 @@
 package com.employee.service;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,9 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.employee.common.Constants;
@@ -18,6 +22,7 @@ import com.employee.exception.NotFoundException;
 import com.employee.mapper.EmployeeMapper;
 import com.employee.persistence.Employee;
 import com.employee.repository.EmployeeRepository;
+import com.employee.repository.EmployeeSpecification;
 
 @Service
 public class EmployeeService {
@@ -28,6 +33,16 @@ public class EmployeeService {
 
 	@Autowired
 	EmployeeMapper employeeMapper;
+
+	public List<EmployeeDTO> findByCriteria(Employee searchCriteria, Integer limit, Integer offset, String orderBy, String order) {
+		Sort sortOrder = new Sort("ASC".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC , orderBy);
+		PageRequest pageRequest = new PageRequest(offset, limit, sortOrder);
+
+		Page<Employee> queryResults = employeeRepository.findAll(
+				EmployeeSpecification.findByCriteria(searchCriteria), pageRequest);
+
+		return employeeMapper.fromEmployees(queryResults.getContent());
+	}
 
 	public List<EmployeeDTO> findAll() {
 		LOG.debug("findAll called");
