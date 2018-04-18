@@ -3,7 +3,7 @@ package com.employee.controller;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
 
 import java.text.ParseException;
 import java.util.List;
@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,8 +44,9 @@ public class EmployeeController {
 	@Autowired
 	EmployeeService employeeService;
 
+	@CrossOrigin
 	@ApiOperation(value = "Retrieve all Employee's", notes = "")
-	@RequestMapping(value = "/employees", method = GET, produces="application/json")
+	@RequestMapping(value = "/employees", method = {GET,OPTIONS}, produces="application/json")
 	@ResponseBody
 	public List<EmployeeDTO> employees(HttpServletResponse response,
 			@ApiParam(value = "The employee's 'firstName'", required = false) @RequestParam(value="firstName", required = false, defaultValue="") String firstName,

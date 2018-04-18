@@ -15,20 +15,22 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import static springfox.documentation.builders.PathSelectors.regex;
 
+import java.util.Collections;
+
 @Configuration
 @EnableSwagger2
 @ComponentScan(basePackages = "com.employee.controller")
 public class SwaggerConfiguration {
 	public static final Contact DEFAULT_CONTACT = new Contact(null, null, null);
 	@Autowired
-	Environment env;
+	private Environment env;
 
 	@Bean
 	public Docket identityApi() {
         ApiInfo apiInfo = new ApiInfo(
                 env.getProperty("info.app.name"),
                 env.getProperty("info.app.description"),
-                env.getProperty("info.version"), null, DEFAULT_CONTACT, null, null);
+                env.getProperty("info.version"), null, DEFAULT_CONTACT, null, null, Collections.emptyList());
 
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("employee-api")
